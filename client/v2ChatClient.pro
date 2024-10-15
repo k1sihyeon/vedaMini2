@@ -13,12 +13,14 @@ SOURCES += \
     main.cpp \
     ../common/message.cpp \
     ../common/user.cpp \
+    registerwidget.cpp \
     widget.cpp
 
 HEADERS += \
     ../common/message.h \
     ../common/user.h \
     loginwidget.h \
+    registerwidget.h \
     widget.h
 
 # Default rules for deployment.

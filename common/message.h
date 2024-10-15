@@ -22,7 +22,7 @@ private:
     QString msg;
     User user;
     //User destUser;
-
+    // 시간
 
 signals:
 
