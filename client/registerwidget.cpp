@@ -46,9 +46,8 @@ void RegisterWidget::submit() {
 }
 
 void RegisterWidget::backToLogin() {
-    //this->close();
-    deleteLater();
+    this->close();
 
-    LoginWidget lw;
-    lw.show();
+    LoginWidget* lw = new LoginWidget();
+    lw->show();
 }

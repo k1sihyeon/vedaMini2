@@ -43,9 +43,13 @@ void LoginWidget::submit() {
     // 를 서버 통해서 로그인 작업
     // 로그인 성공 시 isSuccess는 true로 변경
 
+    // 임시
+    if (inputID->text() == "aaa" && inputPW->text() == "aaa")
+        isSuccess = true;
+
     if (isSuccess) { // 로그인 성공인 경우
-        Widget w;
-        w.show();
+        Widget* w = new Widget();
+        w->show();
 
         this->close();
     }
@@ -60,8 +64,8 @@ void LoginWidget::submit() {
 }
 
 void LoginWidget::registerAct() {
-    RegisterWidget rw;
-    rw.show();
+    RegisterWidget* rw = new RegisterWidget();
+    rw->show();
 
     this->close();
     //this->deleteLater();
