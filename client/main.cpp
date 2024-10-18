@@ -1,6 +1,4 @@
-#include "widget.h"
-#include "loginwidget.h"
-#include "registerwidget.h"
+#include "connectwidget.h"
 
 #include <QApplication>
 
@@ -10,8 +8,8 @@ int main(int argc, char *argv[])
     // Widget w;
     // w.show();
 
-    LoginWidget lw;
-    lw.show();
+    ConnectWidget cw;
+    cw.show();
 
     return a.exec();
 }

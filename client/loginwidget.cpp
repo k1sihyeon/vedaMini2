@@ -68,5 +68,4 @@ void LoginWidget::registerAct() {
     rw->show();
 
     this->close();
-    //this->deleteLater();
 }

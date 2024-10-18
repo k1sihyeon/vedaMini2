@@ -12,7 +12,7 @@ QByteArray Message::makeBtye() {
     QDataStream stream(&bytearray, QIODevice::WriteOnly);
 
     // QDataStream으로 직렬화
-    stream << this->code << this->msg << this->user.getId() << this->user.getName();
+    stream << this->code << this->msg << this->user->getId() << this->user->getName();
 
     return bytearray;
 }

@@ -15,12 +15,17 @@ class Message : public QObject
 public:
     explicit Message(QObject *parent = nullptr);
     QByteArray makeBtye();
+    enum CODE {
+        REQUEST_LOGIN,
+        REQUEST_REGISTER,
+        MESSAGE,
+    };
 
 
 private:
     int code;
     QString msg;
-    User user;
+    User* user;
     //User destUser;
     // 시간
 
