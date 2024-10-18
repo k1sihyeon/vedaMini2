@@ -16,6 +16,7 @@ public:
 private:
     QString id;
     QString name;
+    QString phone;
     QTcpSocket* socket;
 
 signals:
