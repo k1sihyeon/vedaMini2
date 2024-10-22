@@ -5,6 +5,8 @@
 #include <QLineEdit>
 #include <QPushButton>
 
+class QTcpSocket;
+
 class LoginWidget : public QWidget
 {
     Q_OBJECT
@@ -17,9 +19,11 @@ private:
     QLineEdit* inputPW;
     QPushButton* submitBtn;
     QPushButton* registerBtn;
+    QTcpSocket *serverSocket;
 
 private slots:
     void submit();
+    void receive();
     void registerAct();
 
 signals:

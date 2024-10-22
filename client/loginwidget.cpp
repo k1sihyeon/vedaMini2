@@ -1,12 +1,23 @@
 #include "loginwidget.h"
+#include "connectwidget.h"
 #include "registerwidget.h"
 #include "widget.h"
+
+#include "../common/message.h"
 
 #include <QMessageBox>
 #include <QtGui>
 #include <QtWidgets>
+#include <QTcpSocket>
+
+#define BLOCK_SIZE      1024
 
 LoginWidget::LoginWidget(QWidget *parent) : QWidget{parent} {
+    // 서버 소켓 받아오기
+    serverSocket = ConnectWidget::getInstance()->getServerSocket();
+    connect(serverSocket, SIGNAL(readyRead()), this, SLOT(receive()));
+
+    // 입력줄, 버튼
     inputID = new QLineEdit(this);
     inputID->setPlaceholderText(tr("Input ID"));
 
@@ -14,7 +25,6 @@ LoginWidget::LoginWidget(QWidget *parent) : QWidget{parent} {
     inputPW->setPlaceholderText(tr("Input Password"));
 
     submitBtn = new QPushButton("Login", this);
-
     registerBtn = new QPushButton("Create Account", this);
 
     // connect(inputID, SIGNAL(returnPressed()), this, SLOT(submit()));
@@ -22,6 +32,7 @@ LoginWidget::LoginWidget(QWidget *parent) : QWidget{parent} {
     connect(submitBtn, SIGNAL(clicked()), this, SLOT(submit()));
     connect(registerBtn, SIGNAL(clicked()), this, SLOT(registerAct()));
 
+    // 레이아웃 설정
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(inputID);
     mainLayout->addWidget(inputPW);
@@ -31,30 +42,38 @@ LoginWidget::LoginWidget(QWidget *parent) : QWidget{parent} {
 
 void LoginWidget::submit() {
     if (inputID->text().isEmpty() || inputPW->text().isEmpty()) {
-        // 오류 메시지 및 lineinput 삭제
         QMessageBox::warning(this, tr("Login Error"), tr("ID or PW is empty!"));
         return;
     }
 
-    bool isSuccess = false;
+    QJsonObject data;
+    data["id"] = inputID->text();
+    data["password"] = inputPW->text();
 
-    // inputID->text();
-    // inputPW->text();
-    // 를 서버 통해서 로그인 작업
-    // 로그인 성공 시 isSuccess는 true로 변경
+    Message msg(Message::REQUEST_LOGIN, data);
+    serverSocket->write(msg.toByteArray());
 
     // 임시
-    if (inputID->text() == "aaa" && inputPW->text() == "aaa")
-        isSuccess = true;
+    // if (inputID->text() == "aaa" && inputPW->text() == "aaa")
+    //     isSuccess = true;
+}
 
-    if (isSuccess) { // 로그인 성공인 경우
+void LoginWidget::receive() {
+    if (serverSocket->bytesAvailable() > BLOCK_SIZE)
+        return;
+
+    QByteArray bytearray = serverSocket->read(BLOCK_SIZE);
+    Message msg = Message::fromByteArray(bytearray);
+
+    // 로그인 성공
+    if (msg.code == Message::RESPONSE_ACK) {
         Widget* w = new Widget();
         w->show();
 
         this->close();
     }
-    else { // 로그인 에러인 경우
-        // 오류 메시지 및 lineinput 삭제
+    // 로그인 실패
+    else if (msg.code == Message::RESPONSE_NACK) {
         inputID->clear();
         inputPW->clear();
 

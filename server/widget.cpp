@@ -1,5 +1,7 @@
 #include "widget.h"
 
+#include "../common/message.h"
+
 #include <QtGui>
 #include <QtWidgets>
 #include <QtNetwork>
@@ -10,6 +12,7 @@
 Widget::Widget(QWidget *parent) : QWidget(parent)
 {
     label = new QLabel(this);
+    QLabel* portLabel = new QLabel(this);
     QPushButton *quitBtn = new QPushButton("Quit", this);
     connect(quitBtn, SIGNAL(clicked()), qApp, SLOT(quit()));
 
@@ -18,6 +21,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     buttonLayout->addWidget(quitBtn);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->addWidget(portLabel);
     mainLayout->addWidget(label);
     mainLayout->addLayout(buttonLayout);
     setLayout(mainLayout);
@@ -30,7 +34,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
         return;
     }
 
-    label->setText(tr("Server is running on port %1.").arg(server->serverPort()));
+    portLabel->setText(tr("Server is running on port %1.").arg(server->serverPort()));
     setWindowTitle(tr("Chat Server"));
 }
 
@@ -41,31 +45,68 @@ void Widget::clientConnect() {
     clients.push_back(client);
 
     connect(client, SIGNAL(disconnected()), SLOT(clientDisconnect()));
-    connect(client, SIGNAL(readyRead()), SLOT(broadcastChat()));
+    connect(client, SIGNAL(readyRead()), SLOT(clientResponse()));
     label->setText("new connection established!");
 
     // 입장 알림
-    broadcast(client->peerAddress().toString() + " entered chat");
+    //broadcast(client->peerAddress().toString() + " entered chat");
 }
 
-void Widget::broadcastChat() {
-    // client가 보낸 무언가가 있으면 읽어서 broadcast
+void Widget::clientResponse() {
+    // client가 보낸 무언가가 있으면 읽어서 처리
 
     QTcpSocket *client = (QTcpSocket *)sender();
     if (client->bytesAvailable() > BLOCK_SIZE)
         return;
 
     QByteArray bytearray = client->read(BLOCK_SIZE);
+    Message msg = Message::fromByteArray(bytearray);
+
+    switch (msg.code) {
+    case Message::REQUEST_LOGIN:
+        // 임시 -> 여기서 로그인 유효성 확인 필요
+
+        // 로그인 성공
+        if (msg.data["id"] == "aaa" && msg.data["password"] == "aaa") {
+            client->write(Message::getAckMessage().toByteArray());
+        }
+        else {  // 로그인 실패
+            client->write(Message::getNackMessage().toByteArray());
+        }
+
+        break;
+
+    case Message::REQUEST_REGISTER:
+        // msg["id"] 등으로 접근 가능
+        // DB User 삽입
+
+        break;
+
+    case Message::MESSAGE:
+        qDebug() << msg.data["message"].toString();
+        label->setText(msg.data["message"].toString());
+        broadcastChat(msg);
+        break;
+
+    default:
+        break;
+    }
+
+}
+
+void Widget::broadcastChat(Message& msg) {
+
+    //QByteArray msgByte = msg.toByteArray();
 
     // 연결된 모든 클라이언트들(배열)에 전송
     for (const auto& client : clients) {
-        client->write(bytearray);
+        client->write(msg.toByteArray());
     }
 
     // DB 삽입
 
 
-    label->setText(QString(bytearray));
+    //label->setText(QString(msg.data[]));
 }
 
 void Widget::clientDisconnect() {
@@ -79,14 +120,14 @@ void Widget::clientDisconnect() {
 }
 
 //
-void Widget::broadcast(QString msg) {
-    QByteArray byte = msg.toUtf8();
+void Widget::broadcast(QString msgString) {
+    QByteArray byte = msgString.toUtf8();
 
     for (const auto& client : clients) {
         client->write(byte);
     }
 
-    label->setText(msg);
+    label->setText(msgString);
 }
 
 Widget::~Widget() {}

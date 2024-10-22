@@ -5,6 +5,7 @@
 
 class QLineEdit;
 class QPushButton;
+class QTcpSocket;
 
 class RegisterWidget : public QWidget
 {
@@ -21,8 +22,11 @@ private:
     QPushButton* submitBtn;
     QPushButton* backBtn;
 
+    QTcpSocket* serverSocket;
+
 private slots:
     void submit();
+    void receive();
     void backToLogin();
 
 signals:
