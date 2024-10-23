@@ -2,8 +2,11 @@
 #define WIDGET_H
 
 #include <QWidget>
-#include <QTcpServer>
 #include <QLabel>
+
+class Message;
+class QTcpServer;
+class QTcpSocket;
 
 class Widget : public QWidget
 {
@@ -15,7 +18,7 @@ public:
 
 private slots:
     void clientConnect();
-    void broadcastChat();
+    void clientResponse();
     void clientDisconnect();
 
 private:
@@ -23,7 +26,8 @@ private:
     QLabel *label;
     QVector<QTcpSocket *> clients;
 
-    void broadcast(QString msg);
+    void broadcastChat(Message& msg);
+    void broadcast(QString msgString);
 
 };
 #endif // WIDGET_H

@@ -1,5 +1,6 @@
 #include "widget.h"
 #include "connectwidget.h"
+#include "../common/message.h"
 
 #include <QtGui>
 #include <QtWidgets>
@@ -45,7 +46,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     mainLayout->addLayout(btnLayout);
     setLayout(mainLayout);
 
-    connect(serverSocket, SIGNAL(readyRead()), SLOT(getData()));
+    connect(serverSocket, SIGNAL(readyRead()), this, SLOT(getData()));
 
     setWindowTitle(tr("Chat Client"));
 }
@@ -55,19 +56,28 @@ Widget::~Widget() {
 }
 
 void Widget::getData() {
-    QTcpSocket *serverSocket = dynamic_cast<QTcpSocket *>(sender());
     if (serverSocket->bytesAvailable() > BLOCK_SIZE)
         return;
 
     QByteArray bytearray = serverSocket->read(BLOCK_SIZE);
-    message->append(QString(bytearray));
+    Message msg = Message::fromByteArray(bytearray);
+
+    if (msg.code == Message::MESSAGE) {
+        message->append(msg.data["message"].toString());
+    }
+
 }
 
 void Widget::sendData() {
-    QString str = inputLine->text();
-    if (str.length()) {
-        QByteArray bytearray = str.toUtf8();
-        serverSocket->write(bytearray);
+    QString inputStr = inputLine->text();
+    if (inputStr.length() != 0) {
+
+        QJsonObject data;
+        data["message"] = inputStr;
+
+        Message msg(Message::MESSAGE, data);
+        serverSocket->write(msg.toByteArray());
+
         inputLine->clear();
     }
 }

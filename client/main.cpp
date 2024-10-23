@@ -11,5 +11,8 @@ int main(int argc, char *argv[])
     ConnectWidget cw;
     cw.show();
 
+    // 서버 연결 -> 로그인 / 회원가입 -> 채팅
+    // connection -> login / register -> widget
+
     return a.exec();
 }

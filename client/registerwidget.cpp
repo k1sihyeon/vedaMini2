@@ -1,12 +1,21 @@
 #include "registerwidget.h"
 #include "loginwidget.h"
+#include "connectwidget.h"
+
+#include "../common/message.h"
 
 #include <QtWidgets>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QTcpSocket>
+
+#define BLOCK_SIZE      1024
 
 RegisterWidget::RegisterWidget(QWidget *parent) : QWidget{parent}
 {
+    serverSocket = ConnectWidget::getInstance()->getServerSocket();
+    connect(serverSocket, SIGNAL(readyRead()), this, SLOT(receive()));
+
     inputID = new QLineEdit(this);
     inputID->setPlaceholderText(tr("Input ID"));
 
@@ -40,14 +49,44 @@ void RegisterWidget::submit() {
         return;
     }
 
-    // DB User 삽입
+    QJsonObject data;
+    data["id"] = inputID->text();
+    data["password"] = inputPW->text();
+    data["name"] = inputName->text();
+    data["phone"] = inputPhonenum->text();
 
-    // DB로 유저 등록 완료 시 backToLogin 호출
+    Message msg(Message::REQUEST_REGISTER, data);
+    serverSocket->write(msg.toByteArray());
+}
+
+void RegisterWidget::receive() {
+    if (serverSocket->bytesAvailable() > BLOCK_SIZE)
+        return;
+
+    QByteArray bytearray = serverSocket->read(BLOCK_SIZE);
+    Message msg = Message::fromByteArray(bytearray);
+
+    // 회원가입 성공
+    if (msg.code == Message::RESPONSE_ACK) {
+        backToLogin();
+        return;
+    }
+    // 회원가입 실패
+    else if (msg.code == Message::RESPONSE_NACK) {
+        inputID->clear();
+        inputPW->clear();
+        inputName->clear();
+        inputPhonenum->clear();
+
+        QMessageBox::warning(this, tr("Register Error"), tr("Check input"));
+        return;
+    }
 }
 
 void RegisterWidget::backToLogin() {
-    this->close();
-
     LoginWidget* lw = new LoginWidget();
     lw->show();
+
+    this->close();
+    delete(this);
 }

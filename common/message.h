@@ -1,36 +1,35 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#include "user.h"
-
-#include <QObject>
-#include <QDataStream>
-#include <QByteArray>
 #include <QIODevice>
+#include <QJsonObject>
 
-class Message : public QObject
+class QByteArray;
+class QJsonObject;
+
+class Message
 {
-    Q_OBJECT
-
 public:
-    explicit Message(QObject *parent = nullptr);
-    QByteArray makeBtye();
+    Message();
+    Message(int code, const QJsonObject& data);
+
+    QByteArray toByteArray();
+    static Message fromByteArray(const QByteArray& byteArray);
+    static Message getAckMessage();
+    static Message getNackMessage();
+
     enum CODE {
         REQUEST_LOGIN,
         REQUEST_REGISTER,
+        RESPONSE_ACK,
+        RESPONSE_NACK,
+        RESPONSE_LOGIN,
+        RESPONSE_REGISTER,
         MESSAGE,
     };
 
-
-private:
     int code;
-    QString msg;
-    User* user;
-    //User destUser;
-    // 시간
-
-signals:
-
+    QJsonObject data;
 };
 
 #endif // MESSAGE_H
