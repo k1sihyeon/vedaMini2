@@ -83,8 +83,6 @@ void Widget::clientResponse() {
         break;
 
     case Message::MESSAGE:
-        qDebug() << msg.data["message"].toString();
-        label->setText(msg.data["message"].toString());
         broadcastChat(msg);
         break;
 
@@ -96,11 +94,11 @@ void Widget::clientResponse() {
 
 void Widget::broadcastChat(Message& msg) {
 
-    //QByteArray msgByte = msg.toByteArray();
+    QByteArray msgByte = msg.toByteArray();
 
     // 연결된 모든 클라이언트들(배열)에 전송
     for (const auto& client : clients) {
-        client->write(msg.toByteArray());
+        client->write(msgByte);
     }
 
     // DB 삽입

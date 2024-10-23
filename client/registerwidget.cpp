@@ -88,4 +88,5 @@ void RegisterWidget::backToLogin() {
     lw->show();
 
     this->close();
+    delete(this);
 }

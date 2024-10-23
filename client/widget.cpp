@@ -46,7 +46,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     mainLayout->addLayout(btnLayout);
     setLayout(mainLayout);
 
-    connect(serverSocket, SIGNAL(readyRead()), SLOT(getData()));
+    connect(serverSocket, SIGNAL(readyRead()), this, SLOT(getData()));
 
     setWindowTitle(tr("Chat Client"));
 }
@@ -62,19 +62,8 @@ void Widget::getData() {
     QByteArray bytearray = serverSocket->read(BLOCK_SIZE);
     Message msg = Message::fromByteArray(bytearray);
 
-    qDebug() << "get data()";
-
-    qDebug() << "code: " << msg.code;
-    qDebug() << msg.data;
-    qDebug() << msg.data["message"].toString();
-
     if (msg.code == Message::MESSAGE) {
-        qDebug() << "get data(): code checked";
-        qDebug() << msg.data;
-
         message->append(msg.data["message"].toString());
-
-        qDebug() << msg.data["message"].toString();
     }
 
 }

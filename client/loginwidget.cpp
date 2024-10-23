@@ -52,10 +52,6 @@ void LoginWidget::submit() {
 
     Message msg(Message::REQUEST_LOGIN, data);
     serverSocket->write(msg.toByteArray());
-
-    // 임시
-    // if (inputID->text() == "aaa" && inputPW->text() == "aaa")
-    //     isSuccess = true;
 }
 
 void LoginWidget::receive() {
@@ -71,6 +67,8 @@ void LoginWidget::receive() {
         w->show();
 
         this->close();
+        delete(this);
+        //this->close 는 객체 삭제가 아님
     }
     // 로그인 실패
     else if (msg.code == Message::RESPONSE_NACK) {
@@ -80,6 +78,12 @@ void LoginWidget::receive() {
         QMessageBox::warning(this, tr("Login Error"), tr("Check ID and PW!"));
         return;
     }
+    // else if (msg.code == Message::MESSAGE) {
+    //     qDebug() << "login widget takes message..";
+    // }
+    // else {
+    //     qDebug() << "Unknown message code detected in login widget!";
+    // }
 }
 
 void LoginWidget::registerAct() {
@@ -87,4 +91,5 @@ void LoginWidget::registerAct() {
     rw->show();
 
     this->close();
+    delete(this);
 }
