@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QLabel>
 
+class User;
 class Message;
 class QTcpServer;
 class QTcpSocket;
@@ -25,6 +26,7 @@ private:
     QTcpServer *server;
     QLabel *label;
     QVector<QTcpSocket *> clients;
+    QVector<User> users;
 
     void broadcastChat(Message& msg);
     void broadcast(QString msgString);

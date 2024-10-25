@@ -18,6 +18,7 @@ private slots:
     void getData();
     void sendData();
     void uploadFile();
+    void saveFile();
 
 private:
     QTextEdit *message;

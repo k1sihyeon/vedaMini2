@@ -29,6 +29,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     inputLayout->addWidget(inputLine);
     inputLayout->addWidget(sendBtn);
 
+    // 파일 공유 버튼
     QPushButton* fileBtn = new QPushButton("Share File", this);
     connect(fileBtn, SIGNAL(clicked()), this, SLOT(uploadFile()));
 
@@ -39,6 +40,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     // 버튼 레이아웃 :horizon 가로
     QHBoxLayout* btnLayout = new QHBoxLayout;
     btnLayout->addStretch(1);
+    btnLayout->addWidget(fileBtn);
     btnLayout->addWidget(quitBtn);
 
     // 메인 vertical 세로 레이아웃
@@ -62,6 +64,7 @@ void Widget::getData() {
     if (serverSocket->bytesAvailable() > BLOCK_SIZE)
         return;
 
+    // 여기서 파일 전송 관련 수정 필요
     QByteArray bytearray = serverSocket->read(BLOCK_SIZE);
     Message msg = Message::fromByteArray(bytearray);
 
@@ -104,6 +107,43 @@ void Widget::uploadFile() {
     QByteArray fileByte = file.readAll();
     file.close();
 
+    QJsonObject infoJson;
+    infoJson["filename"] = filename;
+    infoJson["filesize"] = file.size();
+    Message msg(Message::REQUEST_FILE_SHARE, infoJson, fileByte);
+    QByteArray msgByte = msg.toByteArray();
+
+    qint64 leftSize = msgByte.size();
+    qint64 send = 0;
+
     // 서버로 전송
+    while (leftSize >= 0) {
+        send = serverSocket->write(msgByte);
+
+        leftSize -= send;
+    }
+
+}
+
+void Widget::saveFile() {
+    QString filename = QFileDialog::getSaveFileName(this, "Select file name to save");
+
+    if (filename.isEmpty() || filename.isNull()) {
+        QMessageBox::warning(this, tr("File write Error"), tr("Select valid file"));
+        return;
+    }
+
+    QFile file(filename);
+    file.open(QIODevice::WriteOnly);
+
+    QFileInfo fileInfo(filename);
+    if (!fileInfo.isWritable()) {
+        QMessageBox::warning(this, tr("File write Error"), tr("Select valid file"));
+        return;
+    }
+
+    // 서버로 부터 수신
+
+
 
 }

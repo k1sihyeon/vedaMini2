@@ -1,6 +1,7 @@
 #include "widget.h"
 
 #include "../common/message.h"
+#include "../common/user.h"
 
 #include <QtGui>
 #include <QtWidgets>
@@ -65,10 +66,14 @@ void Widget::clientResponse() {
     switch (msg.code) {
     case Message::REQUEST_LOGIN:
         // 임시 -> 여기서 로그인 유효성 확인 필요
+        // DB에서 id, pw 확인!
 
         // 로그인 성공
         if (msg.data["id"] == "aaa" && msg.data["password"] == "aaa") {
             client->write(Message::getAckMessage().toByteArray());
+            // DB에서 id로 id, name, phone 등 가져오기
+            User user("id", "name", "010-0000-0000", client);
+            users.push_back(user);
         }
         else {  // 로그인 실패
             client->write(Message::getNackMessage().toByteArray());
@@ -84,6 +89,7 @@ void Widget::clientResponse() {
 
     case Message::MESSAGE:
         broadcastChat(msg);
+        // 메시지 저장!
         break;
 
     default:
@@ -115,6 +121,12 @@ void Widget::clientDisconnect() {
 
     client->deleteLater();
     clients.removeOne(client);  // 클라이언트 배열에서 삭제
+
+    for (auto& u : users) {
+        if (u.socket == client) {
+            users.removeOne(u);
+        }
+    }
 }
 
 //

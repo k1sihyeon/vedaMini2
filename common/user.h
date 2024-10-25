@@ -9,11 +9,11 @@ class User : public QObject
     Q_OBJECT
 
 public:
-    explicit User(QObject *parent = nullptr);
+    explicit User(QString id, QString name, QString phone, QTcpSocket* socket, QObject *parent = nullptr);
     QString getId();
     QString getName();
 
-private:
+//private:
     QString id;
     QString name;
     QString phone;

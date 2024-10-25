@@ -15,12 +15,22 @@ Message::Message(int code, const QJsonObject& data) {
     this->data = data;
 }
 
+Message::Message(int code, const QJsonObject& data, const QByteArray& fileData) {
+    this->code = code;
+    this->data = data;
+    this->fileData = fileData;
+}
+
 QByteArray Message::toByteArray() {
     QByteArray bytearray;
     QDataStream stream(&bytearray, QIODevice::WriteOnly);
     QJsonDocument jsonDoc(this->data);
 
     stream <<this->code << jsonDoc.toJson(QJsonDocument::Compact);
+
+    if (this->code == REQUEST_FILE_SHARE && !this->fileData.isNull()) {
+        stream << this->fileData;
+    }
 
     return bytearray;
 }
@@ -35,6 +45,12 @@ Message Message::fromByteArray(const QByteArray& byteArray) {
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonByte);
     QJsonObject data = jsonDoc.object();
+
+    if (code == REQUEST_FILE_SHARE) {
+        QByteArray fileData;
+        stream >> fileData;
+        return Message(code, data, fileData);
+    }
 
     return Message(code, data);
 }
