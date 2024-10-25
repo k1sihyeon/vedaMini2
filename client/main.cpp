@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     // Widget w;
     // w.show();
 
-    ConnectWidget cw;
+    static ConnectWidget cw;
     cw.show();
 
     // 서버 연결 -> 로그인 / 회원가입 -> 채팅

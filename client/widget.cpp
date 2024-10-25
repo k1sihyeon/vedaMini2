@@ -29,6 +29,9 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     inputLayout->addWidget(inputLine);
     inputLayout->addWidget(sendBtn);
 
+    QPushButton* fileBtn = new QPushButton("Share File", this);
+    connect(fileBtn, SIGNAL(clicked()), this, SLOT(uploadFile()));
+
     // 연결 종료 버튼
     QPushButton* quitBtn = new QPushButton("Quit", this);
     connect(quitBtn, SIGNAL(clicked()), qApp, SLOT(quit()));
@@ -80,4 +83,27 @@ void Widget::sendData() {
 
         inputLine->clear();
     }
+}
+
+void Widget::uploadFile() {
+    QString filename = QFileDialog::getOpenFileName(this, "Select file to share");
+
+    if (filename.isEmpty() || filename.isNull()) {
+        QMessageBox::warning(this, tr("File Open Error"), tr("Select valid file"));
+        return;
+    }
+
+    QFileInfo fileInfo(filename);
+    if (!fileInfo.isReadable()) {
+        QMessageBox::warning(this, tr("File Open Error"), tr("Select valid file"));
+        return;
+    }
+
+    QFile file(filename);
+    file.open(QIODevice::ReadOnly);
+    QByteArray fileByte = file.readAll();
+    file.close();
+
+    // 서버로 전송
+
 }
